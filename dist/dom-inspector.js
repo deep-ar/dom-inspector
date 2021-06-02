@@ -462,15 +462,21 @@ var DomInspector = function () {
 	}, {
 		key: '_onMove',
 		value: function _onMove(e) {
+			var targetParent = null;
+
 			for (var i = 0; i < this.exclude.length; i += 1) {
 				var cur = this.exclude[i];
 				if (cur.isEqualNode(e.target)) {
-					e.target = getNearestAlowedParent(this.exclude, e.target);
+					targetParent = getNearestAlowedParent(this.exclude, e.target);
 					break;
 				}
 			}
 
-			this.target = e.target;
+			if (targetParent) {
+				this.target = targetParent;
+			} else {
+				this.target = e.target;
+			}
 
 			if (this.target === this._cachedTarget) return null;
 

@@ -137,15 +137,21 @@ class DomInspector {
 		return ele;
 	}
 	_onMove(e) {
+		let targetParent = null;
+
 		for (let i = 0; i < this.exclude.length; i += 1) {
 			const cur = this.exclude[i];
 			if (cur.isEqualNode(e.target)) {
-				e.target = getNearestAlowedParent(this.exclude, e.target);
+				targetParent = getNearestAlowedParent(this.exclude, e.target);
 				break;
 			}
 		}
 
-		this.target = e.target;
+		if (targetParent) {
+			this.target = targetParent;
+		} else {
+			this.target = e.target;
+		}
 
 		if (this.target === this._cachedTarget) return null;
 
