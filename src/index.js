@@ -1,5 +1,5 @@
 import './style.css';
-import { $, getElementInfo, isDOM, addRule, findIndex, getMaxZIndex, isParent } from './dom.js';
+import { $, getElementInfo, isDOM, addRule, findIndex, getMaxZIndex, isParent, getNearestAlowedParent } from './dom.js';
 import { throttle, isNull } from './utils.js';
 import logger from './logger.js';
 
@@ -139,7 +139,10 @@ class DomInspector {
 	_onMove(e) {
 		for (let i = 0; i < this.exclude.length; i += 1) {
 			const cur = this.exclude[i];
-			if (cur.isEqualNode(e.target) || isParent(e.target, cur)) return;
+			if (cur.isEqualNode(e.target)) {
+				e.target = getNearestAlowedParent(this.exclude, e.target);
+				break;
+			}
 		}
 
 		this.target = e.target;

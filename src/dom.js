@@ -91,4 +91,14 @@ export function isParent(obj, parentObj) {
 	return false;
 }
 
+export function getNearestAlowedParent(exclude, obj) {
+	if (!obj.parentNode) return null;
+
+	for (let i = 0; i < exclude.length; i += 1) {
+		const cur = exclude[i];
+		if (cur.isEqualNode(obj.parentNode)) return getNearestAlowedParent(exclude, obj.parentNode);
+	}
+	return obj.parentNode;
+}
+
 export default $;
