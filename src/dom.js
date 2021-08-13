@@ -91,14 +91,25 @@ export function isParent(obj, parentObj) {
 	return false;
 }
 
-export function getNearestAlowedParent(exclude, obj) {
+export function getNearestAlowedParent(itemsToCompare, included, obj) {
 	if (!obj.parentNode) return null;
 
-	for (let i = 0; i < exclude.length; i += 1) {
-		const cur = exclude[i];
-		if (cur.isEqualNode(obj.parentNode)) return getNearestAlowedParent(exclude, obj.parentNode);
+	for (let i = 0; i < itemsToCompare.length; i += 1) {
+		const cur = itemsToCompare[i];
+		if (included===true) {
+			if (cur.isEqualNode(obj.parentNode))
+				return obj.parentNode;
+			else
+				return getNearestAlowedParent(itemsToCompare, included, obj.parentNode);
+		} else {
+			if (cur.isEqualNode(obj.parentNode))
+				return getNearestAlowedParent(itemsToCompare, included, obj.parentNode);
+			else
+				return obj.parentNode;
+		}
 	}
-	return obj.parentNode;
+	if (included) return null;
+	else return obj.parentNode;
 }
 
 export default $;

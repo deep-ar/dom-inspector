@@ -280,14 +280,18 @@ function getMaxZIndex() {
 
 
 
-function getNearestAlowedParent(exclude, obj) {
+function getNearestAlowedParent(itemsToCompare, included, obj) {
 	if (!obj.parentNode) return null;
 
-	for (var i = 0; i < exclude.length; i += 1) {
-		var cur = exclude[i];
-		if (cur.isEqualNode(obj.parentNode)) return getNearestAlowedParent(exclude, obj.parentNode);
+	for (var i = 0; i < itemsToCompare.length; i += 1) {
+		var cur = itemsToCompare[i];
+		if (included === true) {
+			if (cur.isEqualNode(obj.parentNode)) return obj.parentNode;else return getNearestAlowedParent(itemsToCompare, included, obj.parentNode);
+		} else {
+			if (cur.isEqualNode(obj.parentNode)) return getNearestAlowedParent(itemsToCompare, included, obj.parentNode);else return obj.parentNode;
+		}
 	}
-	return obj.parentNode;
+	if (included) return null;else return obj.parentNode;
 }
 
 var sep = 'DomInspector: ';
@@ -317,7 +321,8 @@ var DomInspector = function () {
 		}
 
 		this.theme = options.theme || 'dom-inspector-theme-default';
-		this.exclude = this._formatExcludeOption(options.exclude || []);
+		this.exclude = this._formatOption(options.exclude || []);
+		this.only = this._formatOption(options.only || []);
 
 		this.overlay = {};
 		this.overlayId = '';
@@ -464,10 +469,22 @@ var DomInspector = function () {
 		value: function _onMove(e) {
 			var targetParent = null;
 
-			for (var i = 0; i < this.exclude.length; i += 1) {
-				var cur = this.exclude[i];
-				if (cur.isEqualNode(e.target)) {
-					targetParent = getNearestAlowedParent(this.exclude, e.target);
+			if (this.only.length > 0) {
+				for (var i = 0; i < this.only.length; i += 1) {
+					var cur = this.only[i];
+					if (cur.isEqualNode(e.target)) {
+						targetParent = e.target;
+						break;
+					} else {
+						targetParent = getNearestAlowedParent(this.only, true, e.target);
+					}
+				}
+				if (targetParent == null) return;
+			}
+			for (var _i = 0; _i < this.exclude.length; _i += 1) {
+				var _cur = this.exclude[_i];
+				if (_cur.isEqualNode(e.target)) {
+					targetParent = getNearestAlowedParent(this.exclude, false, e.target);
 					break;
 				}
 			}
@@ -533,13 +550,13 @@ var DomInspector = function () {
 			addRule(this.overlay.tips, { top: tipsTop + 'px', left: elementInfo.left + 'px', display: 'block' });
 		}
 	}, {
-		key: '_formatExcludeOption',
-		value: function _formatExcludeOption() {
-			var excludeArray = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+		key: '_formatOption',
+		value: function _formatOption() {
+			var optArray = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 
 			var result = [];
 
-			excludeArray.forEach(function (item) {
+			optArray.forEach(function (item) {
 				if (typeof item === 'string') return result.push($(item));
 
 				if (isDOM(item)) return result.push(item);

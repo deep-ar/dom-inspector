@@ -15,7 +15,8 @@ class DomInspector {
 		}
 
 		this.theme = options.theme || 'dom-inspector-theme-default';
-		this.exclude = this._formatExcludeOption(options.exclude || []);
+		this.exclude = this._formatOption(options.exclude || []);
+		this.only = this._formatOption(options.only || []);
 
 		this.overlay = {};
 		this.overlayId = '';
@@ -139,10 +140,22 @@ class DomInspector {
 	_onMove(e) {
 		let targetParent = null;
 
+		if (this.only.length > 0) {
+			for (let i = 0; i < this.only.length; i += 1) {
+				const cur = this.only[i];
+				if (cur.isEqualNode(e.target)) {
+					targetParent = e.target;
+					break;
+				} else {
+					targetParent = getNearestAlowedParent(this.only, true, e.target);
+				}
+			}
+			if (targetParent == null) return;
+		}
 		for (let i = 0; i < this.exclude.length; i += 1) {
 			const cur = this.exclude[i];
 			if (cur.isEqualNode(e.target)) {
-				targetParent = getNearestAlowedParent(this.exclude, e.target);
+				targetParent = getNearestAlowedParent(this.exclude, false, e.target);
 				break;
 			}
 		}
@@ -205,10 +218,10 @@ class DomInspector {
 		}
 		addRule(this.overlay.tips, { top: `${tipsTop}px`, left: `${elementInfo.left}px`, display: 'block' });
 	}
-	_formatExcludeOption(excludeArray = []) {
+	_formatOption(optArray = []) {
 		const result = [];
 
-		excludeArray.forEach(item => {
+		optArray.forEach(item => {
 			if (typeof item === 'string') return result.push($(item));
 
 			if (isDOM(item)) return result.push(item);
